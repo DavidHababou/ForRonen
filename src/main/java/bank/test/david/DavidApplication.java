@@ -14,6 +14,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.support.converter.Jackson2XmlMessageConverter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 @SpringBootApplication
 public class DavidApplication {
@@ -23,8 +25,19 @@ public class DavidApplication {
 	}
 	static final String queueName = "requests";
 	//static final String topicExchangeName = "david-test-exchange";
-
-	  @Bean
+	
+	@Value("${hostname}")
+	String hostname;
+	@Value("${vhost}")
+	String vhost;
+	@Value("${user}")
+	String user;
+	@Value("${password}")
+	String password;
+	@Autowired
+	RabbitTemplate rabbitTemplate;
+	
+	@Bean
 	  Queue requestQueue() {
 	    return new Queue(queueName, false);
 	  }
@@ -40,12 +53,21 @@ public class DavidApplication {
 	  }*/
 
 	  @Bean
-	  SimpleMessageListenerContainer container(ConnectionFactory connectionFactory,
+	  SimpleMessageListenerContainer BandServiceContainer(ConnectionFactory connectionFactory,
 	      MessageListenerAdapter listenerAdapter) {
 	    SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
 	    container.setConnectionFactory(connectionFactory);
 	    container.setQueueNames(queueName);
 	    container.setMessageListener(listenerAdapter);
+	    return container;
+	  }
+	  @Bean
+	  SimpleMessageListenerContainer templateContainer(ConnectionFactory connectionFactory,
+	      MessageListenerAdapter listenerAdapter) {
+	    SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+	    container.setConnectionFactory(connectionFactory);
+	    container.setQueueNames("responses");
+	    container.setMessageListener(rabbitTemplate);
 	    return container;
 	  }
 
@@ -56,11 +78,10 @@ public class DavidApplication {
 	  @Bean
 	  public ConnectionFactory connectionFactory() {
 	      CachingConnectionFactory connectionFactory = new CachingConnectionFactory();
-	      connectionFactory.setAddresses("rattlesnake.rmq.cloudamqp.com");
-	      connectionFactory.setVirtualHost("moafgngt");
-	      connectionFactory.setUsername("moafgngt");
-	      connectionFactory.setPassword("XPTR_5nPEYsvfysy2ittrc33QCvIpaV6");
-	      connectionFactory.setPublisherReturns(true);
+	      connectionFactory.setAddresses(hostname);
+	      connectionFactory.setVirtualHost(vhost);
+	      connectionFactory.setUsername(user);
+	      connectionFactory.setPassword(password);
 	      return connectionFactory;
 	  }
 	  @Bean
@@ -68,6 +89,7 @@ public class DavidApplication {
 		  RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
 		  rabbitTemplate.setMessageConverter(new Jackson2XmlMessageConverter());
 		  rabbitTemplate.setReceiveTimeout(15000);
+		  rabbitTemplate.setReplyAddress("responses");
 		  return rabbitTemplate;
 	  }
 }

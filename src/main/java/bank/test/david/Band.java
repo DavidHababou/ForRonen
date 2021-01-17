@@ -1,5 +1,6 @@
 package bank.test.david;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Band {
@@ -26,6 +27,9 @@ public class Band {
 	}
 	
 	public List<String> getMembers() {
+		if (members == null) {
+			members = new ArrayList<String>();
+		}
 		return members;
 	}
 }
