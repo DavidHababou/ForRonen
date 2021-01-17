@@ -27,9 +27,6 @@ public class DavidController {
 		CalcResult returnedMessage = (CalcResult) rabbitTepmlate.convertSendAndReceive(requestsQ, request, m -> {
 		     m.getMessageProperties().setReplyTo("responsesQ");
 		     return m;});
-		rabbitTepmlate.convertAndSend(requestsQ, request,m -> {
-		     m.getMessageProperties().setReplyTo("responsesQ");
-		     return m;});
 		logger.info("Calc response received from queue. sending http response");
 		return returnedMessage;
 	}
