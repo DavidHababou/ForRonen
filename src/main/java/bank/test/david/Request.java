@@ -1,15 +1,15 @@
 package bank.test.david;
 
 public class Request {
-	private String name;
-	private boolean includeMembers;
+	private int firstNumber;
+	private int secondNumber;
 	
 	public Request() {
 	}
-	public String getName() {
-		return name;
+	public int getfirstNumber() {
+		return firstNumber;
 	}
-	public boolean getIncludeMembers() {
-		return includeMembers;
+	public int getSecondNumber() {
+		return secondNumber;
 	}
 }

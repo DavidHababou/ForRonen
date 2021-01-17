@@ -1,22 +1,22 @@
 package bank.test.david;
 
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
 
 @Component
 public class Receiver {
 	
-	@Autowired
-	RabbitTemplate rabbitTepmlate;
-	public Band handleMessage(Request message) { 
-		Band retVal = new Band("LedZepplin", "1969-1980", null);
-		if (message.getIncludeMembers()) {
-			retVal.getMembers().add("robert");
-			retVal.getMembers().add("J.P");
-			retVal.getMembers().add("John");
-			retVal.getMembers().add("Jimmy");
+	private final Logger logger = (Logger) LoggerFactory.getLogger(Receiver.class);
+	
+	public CalcResult handleMessage(Request message) throws Exception{
+		try{
+			return new CalcResult().calculate(message.getfirstNumber(), message.getSecondNumber());
 		}
-		return retVal;
+		catch(Exception ex) {
+			logger.error("error calculating data", ex);
+			throw ex;
+		}
 	}
 }
