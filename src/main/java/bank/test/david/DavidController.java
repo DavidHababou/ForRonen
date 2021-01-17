@@ -16,13 +16,20 @@ public class DavidController {
 	@Autowired
 	RabbitTemplate rabbitTepmlate;
 	@Value("${requestsQ}")
-	String requestsQ = "requests";
+	String requestsQ;
+	@Value("${responsesQ}")
+	String responsesQ;
 	private static final Logger logger = (Logger) LoggerFactory.getLogger(DavidController.class);
 	
-	@RequestMapping(value = "/getBandDetails", method = RequestMethod.POST)
+	@RequestMapping(value = "/getDetails", method = RequestMethod.POST)
 	public CalcResult getDetails(@RequestBody Request request) throws Exception{
 		logger.info("RESTfull Calc request received. sending to queue");
-		CalcResult returnedMessage = (CalcResult) rabbitTepmlate.convertSendAndReceive(requestsQ, request);
+		CalcResult returnedMessage = (CalcResult) rabbitTepmlate.convertSendAndReceive(requestsQ, request, m -> {
+		     m.getMessageProperties().setReplyTo("responsesQ");
+		     return m;});
+		rabbitTepmlate.convertAndSend(requestsQ, request,m -> {
+		     m.getMessageProperties().setReplyTo("responsesQ");
+		     return m;});
 		logger.info("Calc response received from queue. sending http response");
 		return returnedMessage;
 	}
