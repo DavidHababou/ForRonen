@@ -1,11 +1,7 @@
 package bank.test.david;
 
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.connection.PublisherCallbackChannel;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
@@ -23,41 +19,36 @@ public class DavidApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(DavidApplication.class, args);
 	}
-	static final String queueName = "requests";
-	//static final String topicExchangeName = "david-test-exchange";
 	
+	@Value("${requestsQ}")
+	private String requestsQ = "requests";
+	@Value("${responsesQ}")
+	private String responsesQ = "responses";
 	@Value("${hostname}")
-	String hostname;
+	private String hostname;
 	@Value("${vhost}")
-	String vhost;
+	private String vhost;
 	@Value("${user}")
-	String user;
+	private String user;
 	@Value("${password}")
-	String password;
+	private String password;
 	@Autowired
 	RabbitTemplate rabbitTemplate;
 	
 	@Bean
 	  Queue requestQueue() {
-	    return new Queue(queueName, false);
+	    return new Queue(requestsQ, false);
 	  }
-
-	  /*@Bean
-	  TopicExchange exchange() {
-	    return new TopicExchange(topicExchangeName);
-	  }*/
-
-	  /*@Bean
-	  Binding binding(Queue queue, TopicExchange exchange) {
-	    return BindingBuilder.bind(queue).to(exchange).with("band.request.#");
-	  }*/
-
+	@Bean
+	  Queue responseQueue() {
+		    return new Queue(responsesQ, false);
+		  }
 	  @Bean
-	  SimpleMessageListenerContainer BandServiceContainer(ConnectionFactory connectionFactory,
+	  SimpleMessageListenerContainer bandServiceContainer(ConnectionFactory connectionFactory,
 	      MessageListenerAdapter listenerAdapter) {
 	    SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
 	    container.setConnectionFactory(connectionFactory);
-	    container.setQueueNames(queueName);
+	    container.setQueueNames(requestsQ);
 	    container.setMessageListener(listenerAdapter);
 	    return container;
 	  }
@@ -66,7 +57,7 @@ public class DavidApplication {
 	      MessageListenerAdapter listenerAdapter) {
 	    SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
 	    container.setConnectionFactory(connectionFactory);
-	    container.setQueueNames("responses");
+	    container.setQueueNames(responsesQ);
 	    container.setMessageListener(rabbitTemplate);
 	    return container;
 	  }
@@ -89,7 +80,7 @@ public class DavidApplication {
 		  RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
 		  rabbitTemplate.setMessageConverter(new Jackson2XmlMessageConverter());
 		  rabbitTemplate.setReceiveTimeout(15000);
-		  rabbitTemplate.setReplyAddress("responses");
+		  rabbitTemplate.setReplyAddress(responsesQ);
 		  return rabbitTemplate;
 	  }
 }
