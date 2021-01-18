@@ -21,7 +21,7 @@ public class DavidController {
 	String responsesQ;
 	private static final Logger logger = (Logger) LoggerFactory.getLogger(DavidController.class);
 	
-	@RequestMapping(value = "/getDetails", method = RequestMethod.POST)
+	@RequestMapping(value = "/calculate", method = RequestMethod.POST)
 	public CalcResult getDetails(@RequestBody Request request) throws Exception{
 		logger.info("RESTfull Calc request received. sending to queue");
 		CalcResult returnedMessage = (CalcResult) rabbitTepmlate.convertSendAndReceive(requestsQ, request, m -> {
