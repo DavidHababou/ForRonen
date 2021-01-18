@@ -1,5 +1,5 @@
 # RestfullCalc
-restfullCalc is an restfull api to calculate arithmetic operations
+restfullCalc is a restfull api to calculate arithmetic operations
 upon two integers 
 
 
